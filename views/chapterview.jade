@@ -1,0 +1,16 @@
+extends layout
+block content
+  h1 #{chaptitle}
+
+  p 上一章: 
+    a(href="#{prevpath.url}") #{prevpath.name}
+  p 下一章: 
+    a(href="#{nextpath.url}") #{nextpath.name}
+
+  div
+    !{chapterContent}
+
+  p 上一章: 
+    a(href="#{prevpath.url}") #{prevpath.name}
+  p 下一章: 
+    a(href="#{nextpath.url}") #{nextpath.name}

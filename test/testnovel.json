@@ -1,0 +1,30 @@
+{
+    "title": "test novel",
+    "chapters":[
+        {
+            "title":"chapter 1",
+            "ordinal":1,
+            "content":"chapter 1 text"
+        },
+        {
+            "title":"chapter 2",
+            "ordinal":2,
+            "content":"chapter 2 text"
+        },
+        {
+            "title":"chapter 3",
+            "ordinal":3,
+            "content":"chapter 3 text"
+        },
+        {
+            "title":"chapter 4",
+            "ordinal":4,
+            "content":"chapter 4 text"
+        },
+        {
+            "title":"chapter 5",
+            "ordinal":5,
+            "content":"chapter 5 text"
+        }
+    ]
+}

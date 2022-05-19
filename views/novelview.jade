@@ -1,0 +1,15 @@
+extends layout
+block content
+  h1 #{title}
+
+  p Operations:
+  form(action="#{path}", method="post")
+      select(name="action")
+        option(value="delete") delete this novel
+      input(type="submit")
+  
+  p Chapters:
+  - each chapter in chapters 
+    li(style="list-style-type:none;")
+      img(src=chapter.iconpath, class="childicon")
+      a(href=chapter.path) #{chapter.name}

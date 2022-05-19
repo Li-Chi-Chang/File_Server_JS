@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <title>Ricky & Pauline 記帳</title>
+</head>
+
+<script> /*-back end connect-*/
+  async function upload_receipts(logName) {
+    receipts = document.getElementById('receipt').files
+    document.getElementById('ImageNum').value = receipts.length
+    document.getElementById('Uploaded').value = 0
+    document.getElementById('Code').onchange()
+    for(let i=0; i<receipts.length; i++){
+        uploadOneReceipt(receipts[i],logName + ' ' + i)
+    }
+    if(receipts.length == 0){
+      document.getElementById('result').innerHTML += 'No image is selected and uploaded<br/>'
+    }
+  }
+
+  function send_form () {
+    
+    document.getElementById('getRes').value = 0
+    document.getElementById('Code').onchange()
+
+    let data = {
+      time: document.getElementById('time').value,
+      catalog: document.getElementById('catalog').value,
+      name: document.getElementById('name1').value + ' ' + document.getElementById('name2').value,
+      amount: document.getElementById('amount').value,
+      account: document.getElementById('account').value,
+      mileage: document.getElementById('mileage').value,
+      gasamount: document.getElementById('gasamount').value,
+      pricepergallon: document.getElementById('pricepergallon').value,
+      station: document.getElementById('station').value,
+    }
+    console.log('updating: ' + data.time+data.catalog+data.name+data.amount)
+    document.getElementById('Code').onchange()
+    if(document.getElementById('name1').value == 'Gas') {
+      data.name = 'Gas'
+    }
+    google.script.run.withSuccessHandler((res) => {
+      document.getElementById('getRes').value = 1
+      document.getElementById('Code').onchange()
+      upload_receipts(data.time + ' ' + data.catalog + ' ' + data.name + ' ' + data.amount)
+      document.getElementById('result').innerHTML += res + '<br/>'
+      document.getElementById('amount').value = ''
+      alert(res)
+    }).withFailureHandler((e) => {
+      document.getElementById('getRes').value = 1
+      document.getElementById('Code').onchange()
+      let res = 'Error: ' + e.toString()
+      document.getElementById('amount').value = ''
+      alert(res)
+    }).generalBuying(data)
+  }
+
+  function get_sum() {
+    refreshbtn = document.getElementById('refresh')
+    refreshbtn.setAttribute("disabled", "disabled")
+    google.script.run.withSuccessHandler((res) => {
+      document.getElementById('sum').innerHTML = res.replaceAll('\n','<br/>')
+      refreshbtn.removeAttribute("disabled")
+    }).getSum()
+  }
+</script>
+
+<script> /*-supporting function-*/
+  //credit: https://stackoverflow.com/questions/31126181
+  function uploadOneReceipt(file,name) {
+    let reader = new FileReader()
+    reader.onload = function (e) {
+      let content = reader.result
+      google.script.run.withSuccessHandler((res) => {
+        document.getElementById('result').innerHTML += res + '<br/>'
+        document.getElementById('Uploaded').value = Number.parseInt(document.getElementById('Uploaded').value)+1
+        document.getElementById('Code').onchange()
+      }).withFailureHandler((e) => {
+      let res = 'Error: ' + e.toString()
+      document.getElementById('result').innerHTML += res + '<br/>'
+      document.getElementById('Uploaded').value = Number.parseInt(document.getElementById('Uploaded').value)+1
+      document.getElementById('Code').onchange()
+    }).upload_receipt(content, name)
+    }
+    reader.readAsDataURL(file)
+}
+
+</script>
+
+<script> /*-form based action-*/
+  function showOtherInfo() {
+    if (document.getElementById('name1').value === "Gas") {
+      let docs = document.getElementsByClassName("gasinfo")
+      Array.prototype.forEach.call(docs, doc => {
+        doc.style.display = "block"
+        doc.style.visibility = "visible"
+      })
+      document.getElementById('name2').style.visibility = "hidden"
+    }
+    else {
+      let docs = document.getElementsByClassName("gasinfo")
+      Array.prototype.forEach.call(docs, doc => {
+        doc.style.display = "none"
+        doc.style.visibility = "hidden"
+      })
+      document.getElementById('name2').style.visibility = "visible"
+    }
+  }
+
+  function getToday() {
+    let date = new Date()
+    document.getElementById('time').value = (date.getFullYear()).toString() + '-' + (date.getMonth() + 1).toString().padStart(2, '0') + '-' + date.getDate().toString()
+  }
+
+  function checkResponse() {
+    let submitbtn = document.getElementById('submit')
+    
+    let dataRes = Number.parseInt(document.getElementById('getRes').value)
+    let imageNum = Number.parseInt(document.getElementById('ImageNum').value)
+    let uploadNum = Number.parseInt(document.getElementById('Uploaded').value)
+    if(dataRes == 1 & imageNum == uploadNum){
+      submitbtn.removeAttribute("disabled")
+    }
+    else{
+      submitbtn.setAttribute("disabled", "disabled")
+    }
+  }
+</script>
+
+<body onload="getToday()">
+  <h3>記帳囉</h3>
+  <table>
+    <tbody>
+      <tr>
+        <td>時間</td>
+        <td>
+          <input type="date" id="time" />
+        </td>
+      </tr>
+      <tr>
+        <td>金額</td>
+        <td>
+          <input type="number" id="amount" step="0.01" pattern="-\d*"  inputmode="decimal"/>
+        </td>
+      </tr>
+      <tr>
+        <td>種類</td>
+        <td>
+          <select id="catalog" name="catalog">
+            <option value="Spending">支出</option>
+            <option value="Income">入帳</option>
+            <option value="Saving">儲蓄</option>
+          </select>
+        </td>
+      </tr>
+      <tr>
+        <td>名稱</td>
+        <td>
+          <select id="name1" name="name1" onchange="showOtherInfo()">
+            <option value="Groceries">雜貨</option>
+            <option value="Meals">餐費</option>
+            <option value="Gas">加油</option>
+            <option value="Salary">薪資</option>
+            <option value="Other">其他</option>
+            </datalist>
+            <input type="text" id="name2" placeholder="details here(optional)" />
+        </td>
+      </tr>
+      <tr>
+        <td>收據</td>
+        <td>
+        <input id="receipt" type="file" accept="image/*" multiple/>
+        </td>
+      </tr>
+      <tr>
+        <td>帳號</td>
+        <td>
+          <select id="account" name="account">
+            <option value="PNC credit(cred)">PNC credit(cred)</option>
+            <option value="Apple card(cred)">Apple card(cred)</option>
+            <option value="PNC checking">PNC checking</option>
+            <option value="BoA checking">BoA checking</option>
+          </select>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+  <table class="gasinfo" style="visibility: hidden;display: none;">
+    <tbody>
+      <tr>
+        <td>里程數</td>
+        <td>
+          <input type="number" id="mileage" step="1" pattern="\d*"  inputmode="decimal"/>
+        </td>
+      </tr>
+      <tr>
+        <td>油量</td>
+        <td>
+          <input type="number" id="gasamount" step="0.001" pattern="\d*"  inputmode="decimal"/>
+        </td>
+      </tr>
+      <tr>
+        <td>單價</td>
+        <td><input type="number" id="pricepergallon" step="0.001" pattern="\d*"  inputmode="decimal"/></td>
+      </tr>
+      <tr>
+        <td>加油站</td>
+        <td>
+          <input type="text" id="station" list="stationlist" />
+          <datalist id="stationlist" name="stationlist">
+            <option value="Costco">Costco</option>
+            <option value="Speedway">Speedway</option>
+            <option value="Dp">Dp</option>
+            <option value="Sunoco">Sunoco</option>
+            <option value="Wawa">Wawa</option>
+            <option value="Shell">Shell</option>
+            <option value="Philips 66">Philips 66</option>
+          </datalist>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+  <button id="submit" type="button" onclick="send_form()">submit</button>
+  <br>
+  <br>
+
+  <div>Summary <button id="refresh" type="button" onclick="get_sum()">refresh</button></div>
+  <div id="sum"></div>
+  <br>
+  <div id="result"></div>
+  <div id="Code" onchange="checkResponse()" hidden>
+    <input type="number" id="getRes" value="0"/>
+    <input type="number" id="ImageNum" value="0"/>
+    <input type="number" id="Uploaded" value="0"/>
+  </div>
+</body>
+
+</html>

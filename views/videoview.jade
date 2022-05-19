@@ -1,0 +1,12 @@
+extends layout
+block content
+  h1 #{title}
+
+  p Operations:
+  form(action="#{path}", method="post")
+      select(name="action")
+        option(value="delete") delete this video
+      input(type="submit")
+  
+  video(muted="muted", controls, poster="#{posterurl}", class="video") 
+    source(src="#{viewurl}")

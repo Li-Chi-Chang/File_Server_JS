@@ -1,0 +1,34 @@
+extends layout
+block content
+  h1 #{title}
+
+  p Children:
+  - each child in childrenDir 
+    li(style="list-style-type:none;")
+      img(src=child.iconpath, class="childicon")
+      a(class="child", href=child.path) #{child.name}
+  
+  - each child in childrenNovel 
+    li(style="list-style-type:none;")
+      img(src=child.iconpath, class="childicon")
+      a(class="child", href=child.path) #{child.name}
+
+  script(src="/javascripts/imagePreview.js",type="text/javascript")
+  - each child in childrenGallery 
+    li(style="list-style-type:none;")
+      img(src=child.iconpath, class="childicon")
+      a(class="screenshot", href=child.path, rel=child.preview) #{child.name}
+  
+  - each child in childrenVideo 
+    li(style="list-style-type:none;")
+      img(src=child.iconpath, class="childicon")
+      a(class="screenshot", href=child.path, rel=child.preview) #{child.name}
+  
+  p modify folder:
+    form(action="#{path}", method="post")
+      select(name="action")
+        option(value="create") create a sub folder
+        option(value="update") update current folder name
+        option(value="delete") delete this folder
+      input(type="text", placeholder="folder name", name="name")
+      input(type="submit")

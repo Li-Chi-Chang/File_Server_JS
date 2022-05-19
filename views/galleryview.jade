@@ -1,0 +1,14 @@
+extends layout
+block content
+  h1 #{title}
+
+  p Operations:
+  form(action="#{path}", method="post")
+      select(name="action")
+        option(value="delete") delete this gallery
+      input(type="submit")
+  
+  p Images:
+  - each image in images 
+    li(style="list-style-type:none;")
+      img(src=image.path, class="imageShow", loading="lazy")
